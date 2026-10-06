@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veritas AI | Fake News Detection Web Application</title>
+    <meta name="description" content="AI-powered Fake News Detector. Paste any news headline or article body to analyze its authenticity with machine learning and view real-time confidence scores.">
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-theme">
+    <!-- Background Ambient Glow Accents -->
+    <div class="ambient-glow ambient-glow-1" aria-hidden="true"></div>
+    <div class="ambient-glow ambient-glow-2" aria-hidden="true"></div>
+
+    <!-- Application Header / Navigation -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">Veritas<span class="gradient-text">AI</span></span>
+                    <span class="brand-subtitle">Fake News Detection Engine</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="status-pill" id="modelStatusPill" title="Model is operational and ready">
+                    <span class="status-dot"></span>
+                    <span class="status-text">ML Model Ready</span>
+                </div>
+                <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle theme">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="badge-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="m4.93 4.93 4.24 4.24"></path>
+                    <path d="m14.83 9.17 4.24-4.24"></path>
+                    <path d="m14.83 14.83 4.24 4.24"></path>
+                    <path d="m9.17 14.83-4.24 4.24"></path>
+                </svg>
+                <span>Natural Language Processing • Machine Learning</span>
+            </div>
+            <h1 class="hero-title">Verify News Authenticity in <span class="gradient-text">Real Time</span></h1>
+            <p class="hero-description">
+                Paste any news article, headline, or excerpt to detect disinformation patterns. Our TF-IDF vectorizer and machine learning classifier evaluate linguistic markers to predict whether content is real or fake.
+            </p>
+        </section>
+
+        <!-- Detector Card Section -->
+        <section class="detector-card" id="detectorCard">
+            <!-- Card Header with Sample Test Shortcuts -->
+            <div class="detector-header">
+                <div class="input-label-group">
+                    <label for="newsInput" class="input-label">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Article or Headline Content
+                    </label>
+                    <span class="input-helper">Minimum 20 words required for reliable analysis</span>
+                </div>
+
+                <!-- Quick Load Sample Buttons -->
+                <div class="quick-samples">
+                    <span class="samples-title">Try Samples:</span>
+                    <button type="button" class="sample-chip sample-real" id="loadRealSampleBtn" title="Load verified real news sample">
+                        <span class="chip-dot chip-dot-real"></span> Real News
+                    </button>
+                    <button type="button" class="sample-chip sample-fake" id="loadFakeSampleBtn" title="Load sensational fake news sample">
+                        <span class="chip-dot chip-dot-fake"></span> Fake News
+                    </button>
+                </div>
+            </div>
+
+            <!-- News Input Textarea -->
+            <div class="textarea-container">
+                <textarea 
+                    id="newsInput" 
+                    placeholder="Paste full news story, breaking press release, or headline here (e.g., 'WASHINGTON (Reuters) - The Federal Reserve announced...')..."
+                    rows="8"
+                    spellcheck="true"
+                    aria-describedby="charWordCounter errorMessage"
+                ></textarea>
+
+                <div class="textarea-floating-actions">
+                    <button type="button" class="icon-action-btn" id="pasteBtn" title="Paste from clipboard">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        </svg>
+                        <span>Paste</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Counter & Validation Strip -->
+            <div class="counter-strip" id="charWordCounter">
+                <div class="counter-group">
+                    <span class="counter-item" id="wordCountBadge">
+                        <span class="counter-val" id="wordCount">0</span> words
+                        <span class="counter-req" id="wordReq">(min 20)</span>
+                    </span>
+                    <span class="counter-divider">•</span>
+                    <span class="counter-item" id="charCountBadge">
+                        <span class="counter-val" id="charCount">0</span> / 5,000 characters
+                    </span>
+                    <span class="counter-divider">•</span>
+                    <span class="counter-item reading-time" id="readingTime">0 sec read</span>
+                </div>
+                <div class="word-progress-bar-container">
+                    <div class="word-progress-bar" id="wordProgressBar"></div>
+                </div>
+            </div>
+
+            <!-- Inline Error Message Display -->
+            <div class="error-message-box" id="errorMessage" role="alert" style="display: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span id="errorText">Please enter some text to analyze.</span>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="detector-actions">
+                <button type="button" class="btn btn-secondary" id="clearBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Clear Text
+                </button>
+
+                <button type="button" class="btn btn-primary" id="checkBtn">
+                    <span class="btn-spinner" id="btnSpinner" aria-hidden="true" style="display: none;"></span>
+                    <svg class="btn-icon" id="btnIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <span id="btnText">Check News Authenticity</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Dynamic Prediction Result Card -->
+        <section class="result-card-section" id="resultCard" style="display: none;">
+            <div class="result-card" id="resultCardContainer">
+                <!-- Result Header -->
+                <div class="result-header">
+                    <div class="result-badge-container">
+                        <div class="verdict-badge" id="verdictBadge">
+                            <span class="verdict-icon" id="verdictIcon"></span>
+                            <span class="verdict-label" id="verdictLabel">REAL</span>
+                        </div>
+                        <span class="verdict-status-subtext" id="verdictSubtext">Prediction complete</span>
+                    </div>
+
+                    <!-- Copy Result Button -->
+                    <button type="button" class="copy-result-btn" id="copyResultBtn" title="Copy result report to clipboard">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span id="copyResultText">Copy Report</span>
+                    </button>
+                </div>
+
+                <!-- Result Body: Big Confidence Display -->
+                <div class="result-body">
+                    <div class="confidence-summary">
+                        <div class="confidence-number-group">
+                            <span class="confidence-score-title">Model Confidence</span>
+                            <div class="confidence-score-wrap">
+                                <span class="confidence-score-val" id="confidenceValue">0.0</span>
+                                <span class="confidence-score-percent">%</span>
+                            </div>
+                        </div>
+                        <div class="confidence-explanation" id="confidenceExplanation">
+                            Our classification model predicts with high confidence that this article adheres to verified real news characteristics.
+                        </div>
+                    </div>
+
+                    <!-- Dual Probability Visual Meter -->
+                    <div class="confidence-meter-container">
+                        <div class="meter-labels">
+                            <div class="meter-label-left">
+                                <span class="indicator-dot dot-real"></span>
+                                <span>Real Probability: <strong id="realProbText">0%</strong></span>
+                            </div>
+                            <div class="meter-label-right">
+                                <span class="indicator-dot dot-fake"></span>
+                                <span>Fake Probability: <strong id="fakeProbText">0%</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="multi-progress-track">
+                            <div class="multi-progress-bar bar-real" id="probRealBar" style="width: 50%;"></div>
+                            <div class="multi-progress-bar bar-fake" id="probFakeBar" style="width: 50%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Diagnostic Metrics Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="metric-data">
+                                <span class="metric-value" id="resWordCount">0</span>
+                                <span class="metric-label">Analyzed Words</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="metric-data">
+                                <span class="metric-value" id="resCharCount">0</span>
+                                <span class="metric-label">Character Count</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                </svg>
+                            </div>
+                            <div class="metric-data">
+                                <span class="metric-value">TF-IDF + ML</span>
+                                <span class="metric-label">Pipeline Engine</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Informative Feature / Methodology Section -->
+        <section class="how-it-works-section">
+            <h2 class="section-title">How Veritas AI Detects Disinformation</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <h3 class="step-title">Text Sanitization</h3>
+                    <p class="step-desc">Strips out extraneous markup, URLs, numbers, and punctuation, normalizing the input text to extract core linguistic structures.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <h3 class="step-title">TF-IDF Vectorization</h3>
+                    <p class="step-desc">Calculates Term Frequency-Inverse Document Frequency scores with unigram and bigram token representations across verified corpora.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <h3 class="step-title">Statistical Classification</h3>
+                    <p class="step-desc">Evaluates n-gram feature weights through our trained machine learning classifier to predict real vs fake probability distributions.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mandatory Disclaimer Notice -->
+        <section class="disclaimer-section">
+            <div class="disclaimer-card">
+                <div class="disclaimer-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="disclaimer-content">
+                    <span class="disclaimer-badge">Important Disclaimer</span>
+                    <p class="disclaimer-text">
+                        This tool gives a prediction based on a machine learning model and is not a guarantee of truth. Machine learning models assess statistical vocabulary patterns and stylistic cues, but cannot replace independent fact-checking, primary source cross-referencing, and journalistic scrutiny.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Application Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <span class="footer-logo">Veritas AI</span>
+                <span class="footer-copy">&copy; Fake News Detection System • Built with Flask, scikit-learn &amp; Vanilla Web Standards</span>
+            </div>
+            <div class="footer-tags">
+                <span class="tech-tag">Python 3</span>
+                <span class="tech-tag">Flask</span>
+                <span class="tech-tag">scikit-learn</span>
+                <span class="tech-tag">TF-IDF</span>
+                <span class="tech-tag">Vanilla JS</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript Logic -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
